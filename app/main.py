@@ -11,19 +11,15 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-    swagger_ui_parameters={
-        "tryItOutEnabled": True
-    }
+    swagger_ui_parameters={"tryItOutEnabled": True},
 )
 
 
 @app.get("/")
 def root():
-    return {
-        "message": "Tiny SD API is running"
-    }
+    return {"message": "Tiny SD API is running"}
 
-    
+
 @app.get("/generate")
 def generate(prompt: str):
     image = generate_image(prompt)
@@ -31,23 +27,12 @@ def generate(prompt: str):
     output_dir = Path("outputs")
     output_dir.mkdir(exist_ok=True)
 
-    safe_prompt = re.sub(
-        r'[\\/*?:"<>|]',
-        "_",
-        prompt
-    )[:40]
+    safe_prompt = re.sub(r'[\\/*?:"<>|]', "_", prompt)[:40]
 
-    filename = (
-        f"{safe_prompt}-"
-        f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-    )
+    filename = f"{safe_prompt}-" f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
 
     path = output_dir / filename
 
     image.save(path)
 
-    return FileResponse(
-        path=path,
-        media_type="image/png",
-        filename=filename
-    )
+    return FileResponse(path=path, media_type="image/png", filename=filename)
