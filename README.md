@@ -10,3 +10,5 @@ colorTo: green
 # Tiny SD FastAPI
 
 FastAPI + Docker + Tiny Stable Diffusion deployment.
+
+[Demo](https://filipvk-tiny-sd-fastapi.hf.space/docs)
