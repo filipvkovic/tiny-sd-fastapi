@@ -6,9 +6,9 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-COPY app ./app
+COPY . .
 
-RUN mkdir -p outputs
+RUN rm -rf outputs && mkdir outputs
 RUN mkdir -p models
 
 EXPOSE 7860
