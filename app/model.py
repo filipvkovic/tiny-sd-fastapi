@@ -19,6 +19,6 @@ pipe.to("cpu")
 @torch.inference_mode()
 def generate_image(prompt):
 
-    image = pipe(prompt, height=256, width=256, num_inference_steps=10).images[0]
+    image = pipe(prompt, height=512, width=512, num_inference_steps=10).images[0]
 
     return image
