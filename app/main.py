@@ -18,12 +18,12 @@ app = FastAPI(
     swagger_ui_parameters={"tryItOutEnabled": True},
 )
 
-# Folder for generated images
-OUTPUT_DIR = Path("outputs")
-OUTPUT_DIR.mkdir(exist_ok=True)
+# Persistent folder inside HF Space workspace
+OUTPUT_DIR = Path("/workspace/persistent_outputs")
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Serve generated files publicly
-app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+app.mount("/outputs", StaticFiles(directory=str(OUTPUT_DIR)), name="outputs")
 
 
 @app.get("/")
