@@ -1,10 +1,14 @@
-from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from urllib.parse import quote
 import re
 
+from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
 from app.model import generate_image
+from app.schemas import GenerateRequest, GenerateResponse
 
 app = FastAPI(
     title="Tiny SD API",
@@ -14,25 +18,36 @@ app = FastAPI(
     swagger_ui_parameters={"tryItOutEnabled": True},
 )
 
+# Folder for generated images
+OUTPUT_DIR = Path("outputs")
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+# Serve generated files publicly
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+
 
 @app.get("/")
 def root():
     return {"message": "Tiny SD API is running"}
 
 
-@app.get("/generate")
-def generate(prompt: str):
+@app.post("/generate", response_model=GenerateResponse)
+def generate(req: GenerateRequest, request: Request):
+    prompt = req.prompt
     image = generate_image(prompt)
 
-    output_dir = Path("outputs")
-    output_dir.mkdir(exist_ok=True)
-
+    # Sanitize filename
     safe_prompt = re.sub(r'[\\/*?:"<>|]', "_", prompt)[:40]
+    filename = f"{safe_prompt}-{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+    path = OUTPUT_DIR / filename
 
-    filename = f"{safe_prompt}-" f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-
-    path = output_dir / filename
-
+    # Save image locally
     image.save(path)
 
-    return FileResponse(path=path, media_type="image/png", filename=filename)
+    # URL-encode filename for safe HTTP URL
+    encoded_filename = quote(filename, safe="")
+    base_url = str(request.base_url).rstrip("/")
+
+    return GenerateResponse(
+        filename=filename, url=f"{base_url}/outputs/{encoded_filename}"
+    )
